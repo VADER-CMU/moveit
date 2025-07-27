@@ -63,6 +63,7 @@
 #include "ompl/base/objectives/MinimaxObjective.h"
 #include "ompl/base/objectives/StateCostIntegralObjective.h"
 #include "ompl/base/objectives/MaximizeMinClearanceObjective.h"
+#include <ompl/base/OptimizationObjective.h>
 #include <ompl/geometric/planners/prm/LazyPRM.h>
 
 namespace ompl_interface
@@ -246,6 +247,18 @@ ompl_interface::ModelBasedPlanningContext::allocPathConstrainedSampler(const omp
   return state_space->allocDefaultStateSampler();
 }
 
+class VADERCustomObjective : public ompl::base::MultiOptimizationObjective
+{
+public:
+  VADERCustomObjective(const ompl::base::SpaceInformationPtr& si)
+  : ompl::base::MultiOptimizationObjective(si)
+    {
+      addObjective(std::make_shared<ompl::base::PathLengthOptimizationObjective>(si), 10.0);
+      addObjective(std::make_shared<ompl::base::MaximizeMinClearanceObjective>(si), 1.0);
+    }
+};
+
+
 void ompl_interface::ModelBasedPlanningContext::useConfig()
 {
   const std::map<std::string, std::string>& config = spec_.config_;
@@ -320,8 +333,16 @@ void ompl_interface::ModelBasedPlanningContext::useConfig()
       objective =
           std::make_shared<ompl::base::MaximizeMinClearanceObjective>(ompl_simple_setup_->getSpaceInformation());
     }
+    else if (optimizer == "VADERCustomObjective")
+    {
+      ROS_WARN_NAMED(LOGNAME, "Using VADER objective");
+      objective =
+          std::make_shared<VADERCustomObjective>(ompl_simple_setup_->getSpaceInformation());
+    }
     else
     {
+      ROS_WARN_NAMED(LOGNAME, "Warning: Falling back to PathLengthOptimizationObjective because '%s' is not a valid optimization objective", optimizer.c_str());
+
       objective =
           std::make_shared<ompl::base::PathLengthOptimizationObjective>(ompl_simple_setup_->getSpaceInformation());
     }
