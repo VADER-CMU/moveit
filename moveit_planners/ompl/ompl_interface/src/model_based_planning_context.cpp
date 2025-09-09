@@ -66,6 +66,8 @@
 #include <ompl/base/OptimizationObjective.h>
 #include <ompl/geometric/planners/prm/LazyPRM.h>
 
+#include "utils/vader_cost_objective.h"
+
 namespace ompl_interface
 {
 constexpr char LOGNAME[] = "model_based_planning_context";
@@ -246,18 +248,6 @@ ompl_interface::ModelBasedPlanningContext::allocPathConstrainedSampler(const omp
   ROS_DEBUG_NAMED(LOGNAME, "%s: Allocating default state sampler for state space", name_.c_str());
   return state_space->allocDefaultStateSampler();
 }
-
-class VADERCustomObjective : public ompl::base::MultiOptimizationObjective
-{
-public:
-  VADERCustomObjective(const ompl::base::SpaceInformationPtr& si)
-  : ompl::base::MultiOptimizationObjective(si)
-    {
-      addObjective(std::make_shared<ompl::base::PathLengthOptimizationObjective>(si), 10.0);
-      addObjective(std::make_shared<ompl::base::MaximizeMinClearanceObjective>(si), 1.0);
-    }
-};
-
 
 void ompl_interface::ModelBasedPlanningContext::useConfig()
 {
