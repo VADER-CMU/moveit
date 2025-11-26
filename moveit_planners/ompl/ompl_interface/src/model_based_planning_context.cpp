@@ -63,7 +63,10 @@
 #include "ompl/base/objectives/MinimaxObjective.h"
 #include "ompl/base/objectives/StateCostIntegralObjective.h"
 #include "ompl/base/objectives/MaximizeMinClearanceObjective.h"
+#include <ompl/base/OptimizationObjective.h>
 #include <ompl/geometric/planners/prm/LazyPRM.h>
+
+#include "utils/vader_cost_objective.h"
 
 namespace ompl_interface
 {
@@ -320,8 +323,16 @@ void ompl_interface::ModelBasedPlanningContext::useConfig()
       objective =
           std::make_shared<ompl::base::MaximizeMinClearanceObjective>(ompl_simple_setup_->getSpaceInformation());
     }
+    else if (optimizer == "VADERCustomObjective")
+    {
+      ROS_WARN_NAMED(LOGNAME, "Using VADER objective");
+      objective =
+          std::make_shared<VADERCustomObjective>(ompl_simple_setup_->getSpaceInformation());
+    }
     else
     {
+      ROS_WARN_NAMED(LOGNAME, "Warning: Falling back to PathLengthOptimizationObjective because '%s' is not a valid optimization objective", optimizer.c_str());
+
       objective =
           std::make_shared<ompl::base::PathLengthOptimizationObjective>(ompl_simple_setup_->getSpaceInformation());
     }

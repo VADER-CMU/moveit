@@ -1,5 +1,8 @@
 set(MOVEIT_LIB_NAME moveit_ompl_interface)
 
+find_package(catkin REQUIRED COMPONENTS
+  vader_planner)
+
 add_library(${MOVEIT_LIB_NAME}
   src/ompl_interface.cpp
   src/planning_context_manager.cpp
@@ -21,6 +24,11 @@ add_library(${MOVEIT_LIB_NAME}
 set_target_properties(${MOVEIT_LIB_NAME} PROPERTIES VERSION "${${PROJECT_NAME}_VERSION}")
 
 find_package(OpenMP REQUIRED)
+include_directories(SYSTEM
+                    "/home/docker_ws/src/planning/vader_planner/include/"
+                    ${catkin_INCLUDE_DIRS}
+                    ${Boost_INCLUDE_DIRS}
+                    ${OMPL_INCLUDE_DIRS})
 
 target_link_libraries(${MOVEIT_LIB_NAME} ${OMPL_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 set_target_properties(${MOVEIT_LIB_NAME} PROPERTIES COMPILE_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
